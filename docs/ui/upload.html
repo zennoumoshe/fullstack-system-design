@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MosheZ · Upload</title>
+<style>
+  :root {
+    --bg: #f8fafc; --surface: #ffffff; --border: #e2e8f0; --input: #cbd5e1;
+    --text: #0f172a; --muted: #64748b; --faint: #94a3b8;
+    --primary: #2563eb; --primary-bg: #eff6ff; --success: #16a34a; --success-bg: #f0fdf4;
+    --warn: #b45309; --warn-bg: #fffbeb; --warn-border: #fcd34d; --danger: #dc2626; --chip: #f1f5f9;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.4 Inter, "Segoe UI", Helvetica, Arial, sans-serif; }
+  button, input, select { font: inherit; }
+  a { color: var(--primary); text-decoration: none; }
+  header { position: sticky; top: 0; z-index: 10; height: 60px; background: var(--surface); border-bottom: 1px solid var(--border);
+           display: flex; align-items: center; padding: 0 32px; gap: 40px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; }
+  .logo { width: 28px; height: 28px; border-radius: 7px; background: var(--primary); display: grid; place-items: center; }
+  nav { display: flex; gap: 32px; height: 100%; }
+  nav a { display: flex; align-items: center; color: var(--muted); font-weight: 500; font-size: 15px; border-bottom: 3px solid transparent; }
+  nav a.active { color: var(--primary); font-weight: 600; border-bottom-color: var(--primary); }
+  .user { margin-left: auto; display: flex; align-items: center; gap: 10px; color: var(--muted); }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: #e0e7ff; color: #3730a3; display: grid; place-items: center; font-size: 11px; font-weight: 700; }
+  main { max-width: 1440px; margin: 0 auto; padding: 24px 32px 48px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 18px; font-size: 13px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+  .card-h { padding: 18px 20px 6px; display: flex; align-items: baseline; gap: 12px; }
+  .card-h h2 { font-size: 16px; margin: 0; }
+  .card-h .hint { color: var(--muted); font-size: 12px; }
+  .card-h .right { margin-left: auto; }
+  .btn { border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 8px; padding: 8px 14px; cursor: pointer; font-weight: 500; }
+  .btn:hover { background: #f8fafc; }
+  .btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
+  .btn.primary:hover { background: #1d4ed8; }
+  .btn.primary:disabled { background: #93c5fd; border-color: #93c5fd; cursor: not-allowed; }
+  .btn.warn { background: var(--warn); border-color: var(--warn); color: #fff; font-weight: 600; }
+  .btn.ghost { border: none; background: none; color: var(--primary); padding: 4px 0; }
+  .btn.danger-link { border: none; background: none; color: var(--danger); padding: 4px 0; }
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 472px; gap: 24px; align-items: start; }
+  .banner { display: flex; align-items: center; gap: 14px; padding: 12px 16px; margin-bottom: 18px; border-radius: 10px;
+            background: var(--warn-bg); border: 1px solid var(--warn-border); color: var(--warn); }
+  .banner .ico { width: 22px; height: 22px; border-radius: 50%; background: var(--warn); color: #fff; display: grid; place-items: center; font-weight: 700; flex: none; }
+  .banner .txt { flex: 1; min-width: 0; }
+  .banner strong { display: block; }
+  .banner small { font-size: 12px; }
+  .bar { height: 8px; border-radius: 4px; background: #e2e8f0; overflow: hidden; }
+  .bar > i { display: block; height: 100%; background: var(--primary); border-radius: 4px; transition: width .2s linear; }
+  .bar.ok > i { background: var(--success); }
+  .bar.warn > i { background: var(--warn); }
+  .drop { border: 2px dashed #93c5fd; background: #f8fbff; border-radius: 12px; padding: 26px; text-align: center; margin-bottom: 24px; transition: background .15s; }
+  .drop.over { background: var(--primary-bg); border-color: var(--primary); }
+  .drop .up { width: 40px; height: 40px; margin: 0 auto 8px; border-radius: 50%; background: #dbeafe; display: grid; place-items: center; }
+  .drop p { margin: 0 0 14px; font-size: 16px; font-weight: 600; }
+  .drop .actions { display: flex; gap: 12px; justify-content: center; }
+  .drop small { display: block; margin-top: 10px; color: var(--muted); font-size: 12px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .02em; background: #f8fafc; padding: 9px 12px; }
+  td { padding: 9px 12px; border-top: 1px solid var(--border); vertical-align: middle; }
+  td.name { font-weight: 600; }
+  td.path { font-family: "JetBrains Mono", Menlo, Consolas, monospace; font-size: 12px; color: var(--muted); }
+  td.muted { color: var(--muted); font-size: 12px; }
+  .x { border: none; background: none; color: var(--faint); font-size: 18px; cursor: pointer; line-height: 1; }
+  .x:hover { color: var(--danger); }
+  .empty { padding: 28px; text-align: center; color: var(--faint); }
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .b-info { background: var(--primary-bg); color: var(--primary); }
+  .b-ok { background: var(--success-bg); color: var(--success); }
+  .b-warn { background: var(--warn-bg); color: var(--warn); }
+  .b-muted { background: var(--chip); color: var(--muted); }
+  .form { padding: 6px 20px 20px; }
+  .field { margin-top: 14px; }
+  .field label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+  .field label .r { color: var(--faint); font-weight: 400; float: right; }
+  .inp { width: 100%; height: 38px; border: 1px solid var(--input); border-radius: 7px; padding: 0 12px; background: #fff; }
+  .inp.err { border-color: var(--danger); }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 38px; border: 1px solid var(--input); border-radius: 7px; padding: 5px 8px; }
+  .tags input { border: none; outline: none; flex: 1; min-width: 80px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; background: var(--chip); border-radius: 13px; padding: 3px 10px; font-size: 12px; font-weight: 500; }
+  .chip button { border: none; background: none; color: var(--muted); cursor: pointer; padding: 0; font-weight: 700; }
+  .kv { display: grid; grid-template-columns: 160px 14px 1fr 20px; gap: 6px; align-items: center; margin-bottom: 8px; }
+  .kv .inp { height: 34px; }
+  .kv span { color: var(--muted); text-align: center; font-weight: 600; }
+  .note { text-align: center; color: var(--muted); font-size: 11px; margin-top: 8px; }
+  .uploads { margin-top: 24px; }
+  .batch { padding: 6px 20px 16px; border-top: 1px solid var(--border); }
+  .batch:first-of-type { border-top: none; }
+  .batch-h { display: grid; grid-template-columns: 220px 1fr 50px 330px auto; gap: 14px; align-items: center; padding: 10px 0; }
+  .batch-h strong { font-size: 14px; }
+  .batch-h .bar { height: 10px; }
+  .meta { color: var(--muted); font-size: 12px; }
+  .frow { display: grid; grid-template-columns: 200px 70px 1fr 260px; gap: 14px; align-items: center; padding: 7px 0 7px 20px; border-top: 1px solid #f1f5f9; }
+  .frow .n { font-weight: 600; }
+  .frow .badges { display: flex; gap: 6px; flex-wrap: wrap; }
+  .frow .retry { grid-column: 3 / 5; color: var(--warn); font-size: 11px; font-style: italic; margin-top: -4px; }
+  .keep { color: var(--warn); font-weight: 600; font-size: 12px; }
+  .modal-bg { position: fixed; inset: 0; background: rgba(15, 23, 42, .45); display: none; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
+  .modal-bg.open { display: flex; }
+  .modal { background: #fff; border-radius: 14px; width: min(520px, 100%); padding: 22px 24px; box-shadow: 0 20px 40px rgba(0,0,0,.2); }
+  .modal h3 { margin: 0 0 4px; }
+  .modal .foot { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+  .inherited { background: #f8fafc; border-radius: 8px; padding: 10px 12px; color: var(--muted); font-size: 12px; margin-top: 12px; }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #0f172a; color: #fff; padding: 10px 16px; border-radius: 8px; font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 60; }
+  .toast.show { opacity: 1; }
+  .demo { margin-left: auto; font-size: 11px; color: var(--faint); }
+  @media (max-width: 1100px) { .layout { grid-template-columns: 1fr; } .batch-h, .frow { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="logo"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M0,14 L7,0 L14,14 Z" fill="#fff" opacity=".9"/></svg></div>MosheZ</div>
+  <nav><a href="upload.html" class="active">Upload</a><a href="browse.html">Browse</a></nav>
+  <div class="user">user-17 <div class="avatar">U17</div></div>
+</header>
+
+<main>
+  <h1>Upload files</h1>
+  <p class="sub">Whole files or folders, up to several TB per file. Nothing is sent before you click “Upload”. <span class="demo">Prototype: fake data, nothing is actually sent.</span></p>
+
+  <div id="banners"></div>
+
+  <div class="layout">
+    <section>
+      <div class="drop" id="drop">
+        <div class="up"><svg width="20" height="20" viewBox="0 0 20 20"><path d="M10,17 L10,4 M4,9 L10,3 L16,9" fill="none" stroke="#2563eb" stroke-width="2.4" stroke-linecap="round"/></svg></div>
+        <p>Drag files or folders here</p>
+        <div class="actions">
+          <button class="btn" id="pickFiles">Browse…</button>
+          <button class="btn" id="pickDir">Choose a folder</button>
+        </div>
+        <small>Files stay on your disk until you click “Upload”: only their name and size are read.</small>
+        <input type="file" id="fileInput" multiple hidden>
+        <input type="file" id="dirInput" webkitdirectory multiple hidden>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h2>Selection</h2><span class="hint" id="selSummary"></span>
+          <button class="btn danger-link right" id="clearSel">Clear all</button></div>
+        <div id="selTable"></div>
+      </div>
+    </section>
+
+    <aside class="card">
+      <div class="card-h" style="flex-direction:column;gap:2px"><h2>Batch metadata</h2>
+        <span class="hint" id="metaHint">Apply to all files · editable per file</span></div>
+      <div class="form">
+        <div class="field"><label>Project *</label>
+          <select class="inp" id="project"><option value="">Choose a project…</option><option selected>Alpha</option><option>Bravo</option><option>Charlie</option></select></div>
+        <div class="field"><label>Description</label>
+          <input class="inp" id="description" value="North campaign, day 4: radar, video and photos"></div>
+        <div class="field"><label>Tags</label>
+          <div class="tags" id="tags"><input id="tagInput" placeholder="+ add (Enter)"></div></div>
+        <div class="field"><label>Free fields <span class="r">key = value</span></label>
+          <div id="kvList"></div>
+          <button class="btn ghost" id="addKv">+ Add a field</button></div>
+        <button class="btn primary" id="uploadBtn" style="width:100%;height:44px;margin-top:18px"></button>
+        <div class="note">Metadata is saved before the first byte is sent.</div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="card uploads">
+    <div class="card-h"><h2>Uploads in progress</h2><span class="hint">accelerated simulation</span>
+      <span class="right keep" id="keepOpen"></span>
+      <button class="btn" id="crashBtn" style="margin-left:12px">Simulate a crash</button></div>
+    <div id="uploadsList"></div>
+  </div>
+</main>
+
+<div class="modal-bg" id="modal"><div class="modal" id="modalBox"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const fmt = (b) => {
+  const u = ["B", "KB", "MB", "GB", "TB"]; let i = 0;
+  while (b >= 1000 && i < u.length - 1) { b /= 1000; i++; }
+  return (b >= 100 || i === 0 ? Math.round(b) : b.toFixed(b >= 10 ? 1 : 2)).toString() + " " + u[i];
+};
+const GB = 1e9, MB = 1e6;
+const TYPES = { ref: "radar", bin: "radar", mp4: "video", mov: "video", mkv: "video", jpg: "image", jpeg: "image", png: "image",
+                tif: "image", tiff: "image", pdf: "document", docx: "document", xlsx: "document", txt: "document" };
+const typeOf = (name) => TYPES[(name.split(".").pop() || "").toLowerCase()] || "unknown";
+let uid = 0;
+const toast = (msg) => { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 2600); };
+
+// ---------- state ----------
+const state = {
+  selection: [
+    ["scan_018.ref", "campaign_north/day4/", 412 * GB], ["scan_019.ref", "campaign_north/day4/", 398 * GB],
+    ["scan_020.ref", "campaign_north/day4/", 405 * GB, { altitude: "1200" }], ["vol_cam_A.mp4", "campaign_north/video/", 92 * GB],
+    ["site_014.jpg", "campaign_north/photos/", 8.4 * MB], ["report_d4.pdf", "campaign_north/", 2.1 * MB],
+  ].map(([name, path, size, own]) => ({ id: ++uid, name, path, size, type: typeOf(name), own: own || {} })),
+  tags: ["radar", "north"],
+  kv: [{ k: "sensor_id", v: "S-12" }, { k: "campaign", v: "north-24" }],
+  batches: [],
+  // interrupted uploads, grouped by batch: what Postgres knows (uploadId, part size, fingerprint)
+  interrupted: [{ id: ++uid, batch: "North campaign, day 3", files: [{ name: "scan_017.ref", size: 412 * GB, sent: 412 * GB * 0.82 }] }],
+};
+
+// a batch already running when the page opens, like in the mockup
+function seedBatch() {
+  const files = [["sud_scan_01.ref", 410 * GB, 100, "done"], ["sud_scan_02.ref", 402 * GB, 100, "analysing"],
+                 ["sud_scan_03.ref", 395 * GB, 24, "uploading"], ["sud_cam_B.mp4", 73 * GB, 0, "waiting"]]
+    .map(([name, size, pct, st]) => ({ id: ++uid, name, size, sent: size * pct / 100, status: st, type: typeOf(name), retried: false }));
+  state.batches.push({ id: ++uid, name: "South campaign", files });
+  setTimeout(() => { files[1].status = "done"; render(); }, 3500);
+}
+seedBatch();
+
+// ---------- banners (interrupted uploads, one per batch) ----------
+const groupInfo = (g) => {
+  const size = g.files.reduce((a, f) => a + f.size, 0), sent = g.files.reduce((a, f) => a + f.sent, 0);
+  return { size, sent, pct: size ? sent / size * 100 : 0,
+           label: g.files.length === 1 ? g.files[0].name : `${g.batch} · ${g.files.length} files` };
+};
+function renderBanners() {
+  $("#banners").innerHTML = state.interrupted.map((g) => {
+    const { size, pct, label } = groupInfo(g);
+    return `<div class="banner">
+      <div class="ico">!</div>
+      <div class="txt"><strong>Upload interrupted: ${label} (${fmt(size)}) · ${Math.floor(pct)}% already received</strong>
+        <small>Reselect the same ${g.files.length === 1 ? "file" : "files"}: only the missing parts will be sent.</small></div>
+      <div style="width:220px" class="bar warn"><i style="width:${pct}%"></i></div><span>${Math.floor(pct)} %</span>
+      <button class="btn warn" data-resume="${g.id}">Resume</button>
+    </div>`;
+  }).join("");
+}
+document.addEventListener("click", (e) => {
+  const id = +e.target.dataset.resume;
+  if (id) openResume(state.interrupted.find((g) => g.id === id));
+});
+
+function openResume(g) {
+  const { label } = groupInfo(g);
+  openModal(`
+    <h3>Resume ${label}</h3>
+    <p class="sub">The browser lost access to the files when the tab was closed. Reselect them:
+    their fingerprint (name + size + modification date) is compared with the recorded one, then only the missing parts are sent.</p>
+    <div class="inherited">${g.files.map((f) => `<b>${f.name}</b> · ${fmt(f.size)} · ${Math.floor(f.sent / f.size * 100)} % already in storage`).join("<br>")}</div>
+    <input type="file" id="resumeInput" multiple hidden>
+    <div class="foot">
+      <button class="btn" data-close>Cancel</button>
+      <button class="btn" id="resumeReal">Choose the ${g.files.length === 1 ? "file" : "files"}…</button>
+      <button class="btn primary" id="resumeSim">Simulate reselection</button>
+    </div>`);
+  const resume = () => {
+    state.interrupted = state.interrupted.filter((x) => x !== g);
+    state.batches.unshift({ id: ++uid, name: g.batch + " (resumed)",
+      files: g.files.map((f) => ({ id: ++uid, name: f.name, size: f.size, sent: f.sent, status: "waiting", type: typeOf(f.name), retried: true })) });
+    closeModal(); renderAll();
+    toast(`Resuming: ${Math.floor(groupInfo(g).pct)} % already received, sending only the missing parts`);
+  };
+  $("#resumeSim").onclick = resume;
+  $("#resumeReal").onclick = () => $("#resumeInput").click();
+  $("#resumeInput").onchange = (e) => {
+    const names = new Set([...e.target.files].map((f) => f.name));
+    const missing = g.files.filter((f) => !names.has(f.name));
+    if (missing.length) { toast(`Different fingerprint: ${missing.map((f) => f.name).join(", ")} not found`); return; }
+    resume();
+  };
+}
+
+// ---------- selection ----------
+function addFiles(list) {
+  for (const { file, path } of list) {
+    state.selection.push({ id: ++uid, name: file.name, path: path || "", size: file.size, type: typeOf(file.name), own: {} });
+  }
+  renderSelection(); renderUploadBtn();
+}
+function renderSelection() {
+  const sel = state.selection;
+  const total = sel.reduce((a, f) => a + f.size, 0);
+  $("#selSummary").textContent = sel.length ? `${sel.length} file${sel.length > 1 ? "s" : ""} · ${fmt(total)} · nothing has been sent yet` : "";
+  $("#metaHint").textContent = `Apply to ${sel.length ? `all ${sel.length} files` : "all files"} · editable per file`;
+  if (!sel.length) { $("#selTable").innerHTML = `<div class="empty">No file selected. Drop files or a folder above.</div>`; return; }
+  $("#selTable").innerHTML = `<table><thead><tr><th>Name</th><th>Original path</th><th>Type</th><th>Size</th><th>Metadata</th><th></th><th></th></tr></thead><tbody>
+    ${sel.map((f) => {
+      const n = Object.keys(f.own).length;
+      return `<tr><td class="name">${f.name}</td><td class="path">${f.path || "—"}</td><td>${f.type}</td><td>${fmt(f.size)}</td>
+        <td>${n ? `<span class="badge b-info">+${n} own field${n > 1 ? "s" : ""}</span>` : `<span class="muted" style="color:var(--muted);font-size:12px">From the batch</span>`}</td>
+        <td><button class="btn ghost" data-edit="${f.id}">Edit</button></td>
+        <td><button class="x" title="Remove" data-remove="${f.id}">×</button></td></tr>`;
+    }).join("")}</tbody></table>`;
+}
+$("#selTable").addEventListener("click", (e) => {
+  const rm = +e.target.dataset.remove, ed = +e.target.dataset.edit;
+  if (rm) { state.selection = state.selection.filter((f) => f.id !== rm); renderSelection(); renderUploadBtn(); }
+  if (ed) openEdit(state.selection.find((f) => f.id === ed));
+});
+$("#clearSel").onclick = () => { state.selection = []; renderSelection(); renderUploadBtn(); };
+
+function openEdit(f) {
+  const rows = () => Object.entries(f.own).map(([k, v], i) => `
+    <div class="kv"><input class="inp" data-k="${i}" value="${k}"><span>=</span><input class="inp" data-v="${i}" value="${v}"><button class="x" data-del="${k}">×</button></div>`).join("");
+  const draw = () => {
+    openModal(`<h3>Metadata for ${f.name}</h3>
+      <p class="sub">This file inherits the batch metadata. Add or override fields for this file only.</p>
+      <div class="inherited">Inherited from the batch: project <b>${$("#project").value || "—"}</b> · tags <b>${state.tags.join(", ") || "—"}</b> · ${state.kv.filter(x => x.k).map((x) => `${x.k} = <b>${x.v}</b>`).join(" · ")}</div>
+      <div class="field"><label>Fields specific to this file</label><div id="ownList">${rows()}</div>
+        <button class="btn ghost" id="ownAdd">+ Add a field</button></div>
+      <div class="foot"><button class="btn" data-close>Cancel</button><button class="btn primary" id="ownSave">Save</button></div>`);
+    $("#ownAdd").onclick = () => { collect(); f.own[`field_${Object.keys(f.own).length + 1}`] = ""; draw(); };
+    $("#ownList").onclick = (e) => { if (e.target.dataset.del !== undefined) { collect(); delete f.own[e.target.dataset.del]; draw(); } };
+    $("#ownSave").onclick = () => { collect(); closeModal(); renderSelection(); };
+  };
+  const collect = () => {
+    const ks = [...document.querySelectorAll("#ownList [data-k]")], vs = [...document.querySelectorAll("#ownList [data-v]")];
+    f.own = Object.fromEntries(ks.map((k, i) => [k.value.trim(), vs[i].value.trim()]).filter(([k]) => k));
+  };
+  draw();
+}
+
+// drop zone, including folders (relative path kept as metadata)
+const drop = $("#drop");
+["dragenter", "dragover"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach((ev) => drop.addEventListener(ev, () => drop.classList.remove("over")));
+drop.addEventListener("drop", async (e) => {
+  e.preventDefault();
+  const items = [...e.dataTransfer.items].map((i) => i.webkitGetAsEntry && i.webkitGetAsEntry()).filter(Boolean);
+  if (!items.length) { addFiles([...e.dataTransfer.files].map((file) => ({ file }))); return; }
+  const out = [];
+  const walk = async (entry, dir) => {
+    if (entry.isFile) { out.push({ file: await new Promise((r) => entry.file(r)), path: dir }); return; }
+    const reader = entry.createReader();
+    let batch;
+    do {
+      batch = await new Promise((r) => reader.readEntries(r));
+      for (const child of batch) await walk(child, dir + entry.name + "/");
+    } while (batch.length);
+  };
+  for (const it of items) await walk(it, "");
+  addFiles(out);
+});
+$("#pickFiles").onclick = () => $("#fileInput").click();
+$("#pickDir").onclick = () => $("#dirInput").click();
+$("#fileInput").onchange = (e) => { addFiles([...e.target.files].map((file) => ({ file }))); e.target.value = ""; };
+$("#dirInput").onchange = (e) => {
+  addFiles([...e.target.files].map((file) => ({ file, path: file.webkitRelativePath.split("/").slice(0, -1).join("/") + "/" })));
+  e.target.value = "";
+};
+
+// ---------- batch metadata ----------
+function renderTags() {
+  const box = $("#tags");
+  box.querySelectorAll(".chip").forEach((c) => c.remove());
+  state.tags.forEach((t, i) => {
+    const c = document.createElement("span");
+    c.className = "chip"; c.innerHTML = `${t}<button data-tag="${i}">×</button>`;
+    box.insertBefore(c, $("#tagInput"));
+  });
+}
+$("#tags").onclick = (e) => {
+  if (e.target.dataset.tag !== undefined) { state.tags.splice(+e.target.dataset.tag, 1); renderTags(); }
+  else $("#tagInput").focus();
+};
+$("#tagInput").onkeydown = (e) => {
+  const v = e.target.value.trim();
+  if (e.key === "Enter" && v) { if (!state.tags.includes(v)) state.tags.push(v); e.target.value = ""; renderTags(); }
+  if (e.key === "Backspace" && !e.target.value && state.tags.length) { state.tags.pop(); renderTags(); }
+};
+function renderKv() {
+  $("#kvList").innerHTML = state.kv.map((x, i) => `
+    <div class="kv"><input class="inp" data-kk="${i}" value="${x.k}" placeholder="key"><span>=</span>
+    <input class="inp" data-kv="${i}" value="${x.v}" placeholder="value"><button class="x" data-kdel="${i}">×</button></div>`).join("");
+}
+$("#kvList").oninput = (e) => {
+  if (e.target.dataset.kk !== undefined) state.kv[+e.target.dataset.kk].k = e.target.value;
+  if (e.target.dataset.kv !== undefined) state.kv[+e.target.dataset.kv].v = e.target.value;
+};
+$("#kvList").onclick = (e) => { if (e.target.dataset.kdel !== undefined) { state.kv.splice(+e.target.dataset.kdel, 1); renderKv(); } };
+$("#addKv").onclick = () => { state.kv.push({ k: "", v: "" }); renderKv(); $("#kvList").lastElementChild.querySelector("input").focus(); };
+$("#project").onchange = renderUploadBtn;
+
+function renderUploadBtn() {
+  const sel = state.selection, total = sel.reduce((a, f) => a + f.size, 0);
+  const b = $("#uploadBtn");
+  b.disabled = !sel.length;
+  b.textContent = sel.length ? `Upload ${sel.length} file${sel.length > 1 ? "s" : ""} (${fmt(total)})` : "Upload";
+}
+$("#uploadBtn").onclick = () => {
+  if (!$("#project").value) { $("#project").classList.add("err"); toast("Project is required: it is validated before the first byte is sent"); return; }
+  $("#project").classList.remove("err");
+  const name = $("#description").value.split(":")[0].trim() || "New batch";
+  state.batches.unshift({ id: ++uid, name, files: state.selection.map((f) => ({ ...f, sent: 0, status: "waiting", retried: false })) });
+  toast(`Batch created and metadata saved: ${state.selection.length} file(s) uploading`);
+  state.selection = [];
+  renderAll();
+};
+
+// ---------- uploads (simulation) ----------
+const SPEED = 95 * MB;            // displayed throughput
+const SIM_FACTOR = 260;           // the demo runs much faster than reality
+const PARALLEL_FILES = 3;
+const ANALYSIS_MS = 3500;
+
+function tick() {
+  const dt = 0.2;
+  let budget = SPEED * SIM_FACTOR * dt;
+  for (const b of state.batches) {
+    for (const f of b.files) if (f.status === "waiting" && b.files.filter((x) => x.status === "uploading").length < PARALLEL_FILES) f.status = "uploading";
+    const active = b.files.filter((f) => f.status === "uploading" && !f.pausedUntil);
+    for (const f of active) {
+      const share = budget / Math.max(1, active.length);
+      f.sent = Math.min(f.size, f.sent + share);
+      if (!f.retried && f.size > 50 * GB && f.sent / f.size > 0.35) {         // one simulated network cut per big file
+        f.retried = true; f.pausedUntil = Date.now() + 1500;
+        f.note = `Part ${Math.round(f.sent / (100 * MB))} cut: retrying automatically`;
+      }
+      if (f.sent >= f.size) {
+        f.status = "analysing"; f.note = "";
+        setTimeout(() => { f.status = f.type === "unknown" ? "skipped" : "done"; render(); }, ANALYSIS_MS);
+      }
+    }
+    for (const f of b.files) if (f.pausedUntil && Date.now() > f.pausedUntil) { f.pausedUntil = 0; f.note = ""; }
+  }
+  render();
+}
+function render() { renderUploads(); renderBanners(); }
+function renderUploads() {
+  const list = state.batches;
+  const anyActive = list.some((b) => b.files.some((f) => f.status === "uploading" || f.status === "waiting"));
+  $("#keepOpen").textContent = anyActive ? "Keep this tab open while uploading" : "";
+  $("#crashBtn").disabled = !anyActive;
+  if (!list.length) { $("#uploadsList").innerHTML = `<div class="empty">No uploads in progress.</div>`; return; }
+  $("#uploadsList").innerHTML = list.map((b) => {
+    const size = b.files.reduce((a, f) => a + f.size, 0), sent = b.files.reduce((a, f) => a + f.sent, 0);
+    const pct = size ? sent / size * 100 : 0, left = (size - sent) / SPEED;
+    const eta = left < 60 ? "" : left < 3600 ? ` · ~${Math.round(left / 60)} min left` : ` · ~${Math.floor(left / 3600)} h ${String(Math.round(left % 3600 / 60)).padStart(2, "0")} left`;
+    return `<div class="batch">
+      <div class="batch-h"><strong>${b.name} · ${b.files.length} file${b.files.length > 1 ? "s" : ""}</strong>
+        <div class="bar ${pct >= 100 ? "ok" : ""}"><i style="width:${pct}%"></i></div><b>${Math.floor(pct)} %</b>
+        <span class="meta">${fmt(sent)} / ${fmt(size)}${pct < 100 ? ` · ${fmt(SPEED)}/s${eta}` : " · done"}</span></div>
+      ${b.files.map((f) => {
+        const p = f.sent / f.size * 100;
+        const st = { waiting: `<span class="badge b-muted">Waiting</span>`,
+          uploading: `<span class="badge b-info">Uploading · ${Math.floor(p)} %</span>`,
+          analysing: `<span class="badge b-ok">Uploaded</span><span class="badge b-info">Analyzing</span>`,
+          done: `<span class="badge b-ok">Uploaded</span><span class="badge b-ok">Analyzed</span>`,
+          skipped: `<span class="badge b-ok">Uploaded</span><span class="badge b-muted">Not analyzable</span>` }[f.status];
+        return `<div class="frow"><span class="n">${f.name}</span><span class="meta">${fmt(f.size)}</span>
+          <div class="bar ${p >= 100 ? "ok" : ""}"><i style="width:${p}%"></i></div><div class="badges">${st}</div>
+          ${f.note ? `<div class="retry">${f.note}</div>` : ""}</div>`;
+      }).join("")}</div>`;
+  }).join("");
+}
+$("#crashBtn").onclick = () => {
+  let n = 0;
+  for (const b of state.batches) {
+    const cut = b.files.filter((f) => f.status === "uploading" || f.status === "waiting");
+    if (!cut.length) continue;
+    state.interrupted.push({ id: ++uid, batch: b.name.replace(/ \(resumed\)$/, ""), files: cut.map((f) => ({ name: f.name, size: f.size, sent: f.sent })) });
+    b.files = b.files.filter((f) => !cut.includes(f));
+    n += cut.length;
+  }
+  state.batches = state.batches.filter((b) => b.files.length);
+  toast(`Simulated crash: ${n} upload(s) interrupted. Received parts stay in storage.`);
+  render();
+};
+window.addEventListener("beforeunload", (e) => {
+  if (state.batches.some((b) => b.files.some((f) => f.status === "uploading" || f.status === "waiting"))) { e.preventDefault(); e.returnValue = ""; }
+});
+
+// ---------- modal ----------
+function openModal(html) { $("#modalBox").innerHTML = html; $("#modal").classList.add("open"); }
+function closeModal() { $("#modal").classList.remove("open"); }
+$("#modal").addEventListener("click", (e) => { if (e.target.id === "modal" || e.target.dataset.close !== undefined) closeModal(); });
+
+function renderAll() { renderSelection(); renderTags(); renderKv(); renderUploadBtn(); render(); }
+renderAll();
+setInterval(tick, 200);
+</script>
+</body>
+</html>

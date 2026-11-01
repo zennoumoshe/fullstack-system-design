@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MosheZ · Browse</title>
+<style>
+  :root {
+    --bg: #f8fafc; --surface: #ffffff; --border: #e2e8f0; --input: #cbd5e1;
+    --text: #0f172a; --muted: #64748b; --faint: #94a3b8;
+    --primary: #2563eb; --primary-bg: #eff6ff; --success: #16a34a; --success-bg: #f0fdf4;
+    --warn: #b45309; --warn-bg: #fffbeb; --chip: #f1f5f9;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.4 Inter, "Segoe UI", Helvetica, Arial, sans-serif; }
+  button, input, select { font: inherit; }
+  a { color: var(--primary); text-decoration: none; }
+  header { position: sticky; top: 0; z-index: 10; height: 60px; background: var(--surface); border-bottom: 1px solid var(--border);
+           display: flex; align-items: center; padding: 0 32px; gap: 40px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; }
+  .logo { width: 28px; height: 28px; border-radius: 7px; background: var(--primary); display: grid; place-items: center; }
+  nav { display: flex; gap: 32px; height: 100%; }
+  nav a { display: flex; align-items: center; color: var(--muted); font-weight: 500; font-size: 15px; border-bottom: 3px solid transparent; }
+  nav a.active { color: var(--primary); font-weight: 600; border-bottom-color: var(--primary); }
+  .user { margin-left: auto; display: flex; align-items: center; gap: 10px; color: var(--muted); }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: #e0e7ff; color: #3730a3; display: grid; place-items: center; font-size: 11px; font-weight: 700; }
+  main { max-width: 1440px; margin: 0 auto; padding: 20px 32px 48px; }
+  .top { display: flex; gap: 16px; align-items: center; }
+  .search { flex: 1; position: relative; }
+  .search input { width: 100%; height: 46px; border: 1px solid var(--input); border-radius: 10px; padding: 0 180px 0 44px; font-size: 15px; background: #fff; }
+  .search svg { position: absolute; left: 16px; top: 15px; }
+  .search .hint { position: absolute; right: 16px; top: 14px; color: var(--faint); font-size: 12px; }
+  select.sort { height: 46px; border: 1px solid var(--input); border-radius: 10px; padding: 0 12px; background: #fff; width: 210px; }
+  .total { font-weight: 700; font-size: 15px; min-width: 110px; text-align: right; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-height: 26px; margin: 14px 0 16px; }
+  .chip { display: inline-flex; align-items: center; gap: 8px; background: var(--primary-bg); color: var(--primary); border-radius: 13px; padding: 3px 10px; font-size: 12px; font-weight: 500; }
+  .chip button { border: none; background: none; color: var(--muted); cursor: pointer; padding: 0; font-weight: 700; font-size: 14px; }
+  .clear { border: none; background: none; color: var(--muted); cursor: pointer; font-size: 12px; }
+  .layout { display: grid; grid-template-columns: 268px minmax(0, 1fr) 380px; gap: 20px; align-items: start; }
+  .layout.nodetail { grid-template-columns: 268px minmax(0, 1fr); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+  aside.filters { padding: 18px 20px; position: sticky; top: 80px; max-height: calc(100vh - 100px); overflow: auto; }
+  aside h2 { font-size: 16px; margin: 0 0 12px; }
+  .facet { margin-bottom: 16px; }
+  .facet h3 { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .02em; margin: 0 0 8px; }
+  .opt { display: flex; align-items: center; gap: 10px; padding: 3px 0; cursor: pointer; user-select: none; }
+  .opt input { width: 16px; height: 16px; accent-color: var(--primary); margin: 0; }
+  .opt .c { margin-left: auto; color: var(--muted); font-size: 12px; }
+  .opt.zero { color: var(--faint); }
+  .dates { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .dates input { height: 32px; border: 1px solid var(--input); border-radius: 7px; padding: 0 6px; font-size: 12px; width: 100%; }
+  .range { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; }
+  .dual { position: relative; height: 28px; margin: 2px 0 2px; }
+  .dual .track { position: absolute; left: 8px; right: 8px; top: 12px; height: 4px; border-radius: 2px; background: #e2e8f0; }
+  .dual .track i { position: absolute; top: 0; bottom: 0; background: var(--primary); border-radius: 2px; }
+  .dual input { position: absolute; left: 0; top: 4px; width: 100%; height: 20px; margin: 0; background: none;
+                pointer-events: none; -webkit-appearance: none; appearance: none; }
+  .dual input::-webkit-slider-runnable-track { background: none; }
+  .dual input::-moz-range-track { background: none; }
+  .dual input::-webkit-slider-thumb { pointer-events: auto; -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+                                      background: #fff; border: 2px solid var(--primary); cursor: pointer; }
+  .dual input::-moz-range-thumb { pointer-events: auto; width: 12px; height: 12px; border-radius: 50%;
+                                  background: #fff; border: 2px solid var(--primary); cursor: pointer; }
+  .sep { border-top: 1px solid var(--border); margin: 6px 0 14px; }
+  .sugg-h small { display: block; color: var(--faint); font-style: italic; font-size: 11px; margin-top: -4px; margin-bottom: 8px; }
+  .key { display: flex; align-items: center; gap: 6px; padding: 4px 0; cursor: pointer; font-weight: 500; user-select: none; }
+  .key .c { margin-left: auto; color: var(--muted); font-size: 12px; font-weight: 400; }
+  .key.open { font-weight: 600; }
+  .vals { padding-left: 18px; margin-bottom: 6px; }
+  .vals input.find { width: 100%; height: 28px; border: 1px solid var(--input); border-radius: 7px; padding: 0 8px; font-size: 12px; margin-top: 4px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(206px, 1fr)); gap: 16px; }
+  .res { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; cursor: pointer; transition: box-shadow .15s; }
+  .res:hover { box-shadow: 0 4px 14px rgba(15, 23, 42, .08); }
+  .res.sel { border: 2.5px solid var(--primary); }
+  .thumb { height: 136px; position: relative; background: #f1f5f9; }
+  .thumb svg { display: block; width: 100%; height: 100%; }
+  .thumb .badge { position: absolute; top: 10px; left: 10px; }
+  .res .body { padding: 12px 14px 14px; }
+  .res .n { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .res .m { color: var(--muted); font-size: 12px; margin: 2px 0 8px; }
+  .badges { display: flex; gap: 6px; flex-wrap: wrap; }
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .b-info { background: var(--primary-bg); color: var(--primary); }
+  .b-ok { background: var(--success-bg); color: var(--success); }
+  .b-muted { background: var(--chip); color: var(--muted); }
+  .more { text-align: center; color: var(--faint); font-style: italic; font-size: 12px; padding: 20px 0; }
+  .empty { padding: 60px 20px; text-align: center; color: var(--muted); }
+  .detail { padding: 18px 20px; position: sticky; top: 80px; max-height: calc(100vh - 100px); overflow: auto; }
+  .detail .h { display: flex; align-items: center; gap: 10px; }
+  .detail .h h2 { font-size: 18px; margin: 0; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .x { border: none; background: none; color: var(--faint); font-size: 22px; cursor: pointer; line-height: 1; }
+  .preview { height: 170px; border-radius: 8px; overflow: hidden; margin: 14px 0; background: #f1f5f9; }
+  .preview svg { width: 100%; height: 100%; display: block; }
+  .btn { border: 1px solid var(--border); background: var(--surface); border-radius: 8px; padding: 8px 14px; cursor: pointer; font-weight: 500; }
+  .btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; width: 100%; height: 42px; }
+  .btn.primary:hover { background: #1d4ed8; }
+  .dl-note { text-align: center; color: var(--muted); font-size: 11px; margin: 8px 0 4px; }
+  .sec { border-top: 1px solid var(--border); margin-top: 14px; padding-top: 12px; }
+  .sec h3 { font-size: 11px; color: var(--muted); text-transform: uppercase; margin: 0 0 8px; display: flex; justify-content: space-between; align-items: center; }
+  .row { display: grid; grid-template-columns: 120px 1fr; gap: 8px; font-size: 12px; padding: 2px 0; }
+  .row span:first-child { color: var(--muted); }
+  .row span:last-child { font-weight: 500; word-break: break-word; }
+  .mono { font-family: "JetBrains Mono", Menlo, Consolas, monospace; }
+  .link { border: none; background: none; color: var(--primary); font-weight: 600; cursor: pointer; padding: 12px 0 0; }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #0f172a; color: #fff; padding: 10px 16px; border-radius: 8px; font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 60; max-width: 90vw; }
+  .toast.show { opacity: 1; }
+  .demo { color: var(--faint); font-size: 11px; margin-left: 8px; }
+  @media (max-width: 1200px) { .layout, .layout.nodetail { grid-template-columns: 240px minmax(0, 1fr); } .detail { grid-column: 1 / -1; position: static; } }
+  @media (max-width: 760px) { .layout, .layout.nodetail { grid-template-columns: 1fr; } aside.filters { position: static; max-height: none; } .top { flex-wrap: wrap; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="logo"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M0,14 L7,0 L14,14 Z" fill="#fff" opacity=".9"/></svg></div>MosheZ</div>
+  <nav><a href="upload.html">Upload</a><a href="browse.html" class="active">Browse</a></nav>
+  <div class="user">user-17 <div class="avatar">U17</div></div>
+</header>
+
+<main>
+  <div class="top">
+    <div class="search">
+      <svg width="18" height="18" viewBox="0 0 18 18"><circle cx="7.5" cy="7.5" r="6" fill="none" stroke="#64748b" stroke-width="2"/><path d="M12,12 L17,17" stroke="#64748b" stroke-width="2" stroke-linecap="round"/></svg>
+      <input id="q" placeholder="Search…" value="campaign">
+      <span class="hint">name, description, tags</span>
+    </div>
+    <select class="sort" id="sort">
+      <option value="relevance">Sort: Relevance</option><option value="date">Sort: Date</option>
+      <option value="name">Sort: Name</option><option value="size">Sort: Size</option>
+    </select>
+    <div class="total" id="total"></div>
+  </div>
+  <div class="chips" id="chips"></div>
+
+  <div class="layout" id="layout">
+    <aside class="card filters" id="filters"></aside>
+    <section><div class="grid" id="grid"></div><div class="more" id="more"></div></section>
+    <aside class="card detail" id="detail"></aside>
+  </div>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const fmt = (b) => {
+  const u = ["B", "KB", "MB", "GB", "TB"]; let i = 0;
+  while (b >= 1000 && i < u.length - 1) { b /= 1000; i++; }
+  return (b >= 100 || i === 0 ? Math.round(b) : b.toFixed(1)).toString() + " " + u[i];
+};
+const toast = (msg) => { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 3200); };
+function rng(seed) { return () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648; }
+
+// ---------- fake catalog (what OpenSearch would hold) ----------
+const GB = 1e9, MB = 1e6;
+const R = rng(42);
+const pick = (a) => a[Math.floor(R() * a.length)];
+const regions = ["north", "north", "north", "south", "south", "center", "coast"];
+const files = [];
+let id = 1;
+function add(f) { files.push({ id: id++, uploader: "user-17", status: "done", tags: [], meta: {}, ...f }); }
+// the batch shown in the mockup: north campaign, day 3
+add({ name: "scan_014.ref", type: "radar", size: 412 * GB, project: "Alpha", date: "2026-10-28", batch: 7, desc: "North campaign, day 3",
+      tags: ["radar", "north"], meta: { region: "north", sensor_id: "S-12", campaign: "north-24" }, tech: { duration_s: 3600, sample_rate: "2000 Hz", channels: 4 }, path: "campaign_north/day3/", crc: "9f3a1c07" });
+add({ name: "vol_cam_A.mp4", type: "video", size: 92 * GB, project: "Alpha", date: "2026-10-28", batch: 7, desc: "North campaign, day 3",
+      tags: ["video", "north"], meta: { region: "north", campaign: "north-24" }, tech: { duration: "1:02:14", resolution: "3840×2160", codec: "H.265" }, path: "campaign_north/video/" });
+add({ name: "report_d3.pdf", type: "document", size: 2.1 * MB, project: "Alpha", date: "2026-10-28", batch: 7, desc: "North campaign, day 3: report",
+      tags: ["report", "north"], meta: { region: "north", campaign: "north-24" }, tech: { pages: 14, author: "radar team" }, path: "campaign_north/" });
+add({ name: "scan_015.ref", type: "radar", size: 398 * GB, project: "Alpha", date: "2026-10-28", batch: 7, desc: "North campaign, day 3",
+      tags: ["radar", "north"], meta: { region: "north", sensor_id: "S-12", campaign: "north-24" }, tech: { duration_s: 3480, sample_rate: "2000 Hz", channels: 4 }, path: "campaign_north/day3/" });
+add({ name: "scan_016.ref", type: "radar", size: 405 * GB, project: "Alpha", date: "2026-10-28", batch: 7, desc: "North campaign, day 3",
+      tags: ["radar", "north"], meta: { region: "north", sensor_id: "S-07", campaign: "north-24" }, status: "pending", path: "campaign_north/day3/" });
+add({ name: "vol_cam_B.mp4", type: "video", size: 73 * GB, project: "Alpha", date: "2026-10-28", batch: 7, desc: "North campaign, day 3",
+      tags: ["video", "north"], meta: { region: "north", campaign: "north-24" }, tech: { duration: "0:48:51", resolution: "1920×1080", codec: "H.264" }, path: "campaign_north/video/" });
+// the rest of the catalog
+for (let i = 0; i < 110; i++) {
+  const type = pick(["radar", "radar", "video", "image", "image", "document", "unknown"]);
+  const region = pick(regions), project = R() < 0.82 ? "Alpha" : "Bravo";
+  const day = 1 + Math.floor(R() * 58), d = new Date(2026, 8, day);
+  const date = d.toISOString().slice(0, 10);
+  const base = { radar: "scan", video: "vol_cam", image: "site", document: "report", unknown: "calib" }[type];
+  const ext = { radar: "ref", video: "mp4", image: "jpg", document: "pdf", unknown: "bin" }[type];
+  const size = { radar: (300 + R() * 150) * GB, video: (20 + R() * 90) * GB, image: (2 + R() * 20) * MB, document: (0.3 + R() * 5) * MB, unknown: (1 + R() * 900) * MB }[type];
+  const meta = { region, campaign: `${region}-${pick(["23", "24"])}` };
+  if (type === "radar" || R() < 0.15) meta.sensor_id = pick(["S-12", "S-07", "S-03"]);
+  if (R() < 0.3) meta.altitude = String(pick([200, 450, 800, 1200]));
+  const tech = { radar: { duration_s: 3000 + Math.floor(R() * 900), sample_rate: "2000 Hz", channels: 4 }, video: { duration: `0:${10 + Math.floor(R() * 49)}:12`, resolution: "1920×1080", codec: "H.264" },
+                 image: { dimensions: "6000×4000", camera: "DJI M3E", gps: "yes" }, document: { pages: 2 + Math.floor(R() * 30) }, unknown: null }[type];
+  add({ name: `${base}_${String(100 + i).padStart(3, "0")}.${ext}`, type, size, project, date, batch: 10 + Math.floor(i / 6),
+        desc: `${region[0].toUpperCase() + region.slice(1)} campaign${R() < 0.5 ? ", survey" : ""}`, tags: [type === "unknown" ? "calibration" : type, region],
+        meta, tech, status: type === "unknown" ? "skipped" : (R() < 0.04 ? "pending" : "done"), uploader: pick(["user-17", "user-04", "user-31"]),
+        path: `campaign_${region}/` });
+}
+files.forEach((f) => { f.crc = f.crc || Math.floor(R() * 0xffffffff).toString(16).padStart(8, "0"); });
+
+// ---------- thumbnails (the previews/ generated by the worker) ----------
+function thumb(f, w = 216, h = 136) {
+  const r = rng(f.id * 97 + 7);
+  if (f.status === "pending" || f.type === "unknown" || (f.type === "radar" && f.status !== "done")) {
+    const label = f.type === "unknown" ? "BIN" : f.type.toUpperCase();
+    return `<svg viewBox="0 0 ${w} ${h}"><rect width="${w}" height="${h}" fill="#f1f5f9"/>
+      <rect x="${w / 2 - 22}" y="${h / 2 - 28}" width="44" height="56" rx="4" fill="#fff" stroke="#cbd5e1"/>
+      <text x="${w / 2}" y="${h / 2 + 5}" font-size="10" font-weight="700" fill="#64748b" text-anchor="middle">${label}</text></svg>`;
+  }
+  if (f.type === "radar") {
+    let s = ""; const cols = 24, rows = 12, cw = w / cols, ch = h / rows, ridge = 0.3 + r() * 0.4;
+    for (let c = 0; c < cols; c++) for (let k = 0; k < rows; k++) {
+      let v = r() * 0.35 + Math.max(0, 1 - Math.abs(k / rows - ridge - 0.15 * c / cols) * 5) * 0.75; v = Math.min(1, v);
+      s += `<rect x="${(c * cw).toFixed(1)}" y="${(k * ch).toFixed(1)}" width="${(cw + .6).toFixed(1)}" height="${(ch + .6).toFixed(1)}" fill="rgb(${20 + 235 * v | 0},${40 + 170 * v * v | 0},${120 - 80 * v | 0})"/>`;
+    }
+    return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">${s}</svg>`;
+  }
+  if (f.type === "video") {
+    const p = [0.62, 0.42, 0.6, 0.36, 0.58, 0.5].map((y) => y + (r() - 0.5) * 0.1);
+    return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><defs><linearGradient id="g${f.id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1e3a5f"/><stop offset="1" stop-color="#f59e0b"/></linearGradient></defs>
+      <rect width="${w}" height="${h}" fill="url(#g${f.id})"/>
+      <path d="M0,${h} L0,${h * p[0]} L${w * .22},${h * p[1]} L${w * .4},${h * p[2]} L${w * .62},${h * p[3]} L${w * .82},${h * p[4]} L${w},${h * p[5]} L${w},${h} Z" fill="#1f2937"/>
+      <circle cx="${w / 2}" cy="${h / 2}" r="20" fill="#000" opacity=".45"/><path d="M${w / 2 - 6},${h / 2 - 10} L${w / 2 + 11},${h / 2} L${w / 2 - 6},${h / 2 + 10} Z" fill="#fff"/>
+      <rect x="${w - 58}" y="${h - 26}" width="50" height="18" rx="4" fill="#000" opacity=".6"/><text x="${w - 33}" y="${h - 13}" font-size="10.5" font-weight="600" fill="#fff" text-anchor="middle">${f.tech ? f.tech.duration : ""}</text></svg>`;
+  }
+  if (f.type === "image") {
+    const hue = 180 + r() * 60;
+    return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><rect width="${w}" height="${h}" fill="hsl(${hue},55%,78%)"/>
+      <circle cx="${w * (0.2 + r() * 0.6)}" cy="${h * 0.3}" r="14" fill="#fde68a"/>
+      <path d="M0,${h} L0,${h * 0.65} Q${w * 0.3},${h * (0.4 + r() * 0.2)} ${w * 0.55},${h * 0.62} T${w},${h * 0.55} L${w},${h} Z" fill="hsl(${100 + r() * 40},35%,40%)"/>
+      <path d="M0,${h} L0,${h * 0.82} Q${w * 0.5},${h * 0.7} ${w},${h * 0.8} L${w},${h} Z" fill="hsl(${90 + r() * 30},30%,30%)"/></svg>`;
+  }
+  // document
+  const bars = [0, 1, 2, 3, 4].map(() => 14 + r() * 28);
+  return `<svg viewBox="0 0 ${w} ${h}"><rect width="${w}" height="${h}" fill="#e2e8f0"/>
+    <rect x="${w / 2 - 50}" y="12" width="100" height="${h - 12}" rx="2" fill="#fff" stroke="#cbd5e1"/>
+    <rect x="${w / 2 - 40}" y="24" width="60" height="7" rx="2" fill="#334155"/>
+    ${[0, 1, 2, 3].map((i) => `<rect x="${w / 2 - 40}" y="${40 + i * 9}" width="${80 - (i % 2) * 18}" height="4" rx="2" fill="#cbd5e1"/>`).join("")}
+    ${bars.map((b, i) => `<rect x="${w / 2 - 36 + i * 15}" y="${112 - b}" width="10" height="${b}" rx="1" fill="#60a5fa"/>`).join("")}
+    <rect x="${w - 44}" y="10" width="34" height="18" rx="4" fill="#dc2626"/><text x="${w - 27}" y="23" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">PDF</text></svg>`;
+}
+
+// ---------- filter state (what GET /search would receive) ----------
+const TYPE_LABEL = { radar: "Radar", video: "Video", image: "Image", document: "Document", unknown: "Unknown" };
+const STATUS_LABEL = { done: "Analyzed", pending: "Analyzing", skipped: "Not analyzable" };
+const F = { type: new Set(["radar", "video", "document"]), project: new Set(["Alpha"]), status: new Set(),
+            from: "2026-09-01", to: "2026-10-28", meta: { region: new Set(["north"]) }, batch: null, smin: 0, smax: 8 };
+// size slider stops (log-like scale: from a few KB to several TB)
+const SIZE_STOPS = [0, 1e6, 1e7, 1e8, 1e9, 1e10, 1e11, 5e11, Infinity];
+const SIZE_LABELS = ["0", "1 MB", "10 MB", "100 MB", "1 GB", "10 GB", "100 GB", "500 GB", "∞"];
+const sizeActive = () => F.smin > 0 || F.smax < SIZE_STOPS.length - 1;
+const sizeLabel = () => F.smin === 0 ? `≤ ${SIZE_LABELS[F.smax]}` : F.smax === SIZE_STOPS.length - 1 ? `≥ ${SIZE_LABELS[F.smin]}` : `${SIZE_LABELS[F.smin]} – ${SIZE_LABELS[F.smax]}`;
+let openKeys = new Set(["region"]), valueFind = {}, selected = 1, shown = 12;
+
+const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+function textMatch(f, q) {
+  if (!q) return 1;
+  const hay = norm([f.name, f.desc, ...f.tags].join(" "));
+  const words = norm(q).split(/\s+/).filter(Boolean);
+  let score = 0;
+  for (const w of words) {
+    const stem = w.replace(/s$/, "");
+    if (!hay.includes(stem)) return 0;              // every word must match (tolerates plurals)
+    score += norm(f.name).includes(stem) ? 2 : 1;
+  }
+  return score;
+}
+// a file matches all active filters, except the one given in `skip` (used for facet counts)
+function matches(f, skip) {
+  if (skip !== "q" && !textMatch(f, $("#q").value.trim())) return false;
+  if (skip !== "type" && F.type.size && !F.type.has(f.type)) return false;
+  if (skip !== "project" && F.project.size && !F.project.has(f.project)) return false;
+  if (skip !== "status" && F.status.size && !F.status.has(f.status)) return false;
+  if (skip !== "date" && ((F.from && f.date < F.from) || (F.to && f.date > F.to))) return false;
+  if (skip !== "size" && (f.size < SIZE_STOPS[F.smin] || f.size > SIZE_STOPS[F.smax])) return false;
+  if (F.batch !== null && f.batch !== F.batch) return false;
+  for (const [k, vals] of Object.entries(F.meta)) if (skip !== "meta." + k && vals.size && !vals.has(f.meta[k])) return false;
+  return true;
+}
+const countBy = (skip, keyFn) => {
+  const m = new Map();
+  for (const f of files) if (matches(f, skip)) { const k = keyFn(f); if (k !== undefined) m.set(k, (m.get(k) || 0) + 1); }
+  return m;
+};
+
+// ---------- rendering ----------
+function results() {
+  const q = $("#q").value.trim(), sort = $("#sort").value;
+  const r = files.filter((f) => matches(f));
+  const by = { relevance: (a, b) => textMatch(b, q) - textMatch(a, q) || b.date.localeCompare(a.date) || a.id - b.id,
+               date: (a, b) => b.date.localeCompare(a.date) || a.id - b.id, name: (a, b) => a.name.localeCompare(b.name), size: (a, b) => b.size - a.size };
+  return r.sort(by[sort]);
+}
+function renderFilters() {
+  const facet = (title, key, labels, order) => {
+    const counts = countBy(key, (f) => f[key]);
+    const opts = order.map((v) => {
+      const c = counts.get(v) || 0, on = F[key].has(v);
+      return `<label class="opt ${c ? "" : "zero"}"><input type="checkbox" data-f="${key}" value="${v}" ${on ? "checked" : ""}>${labels[v] || v}<span class="c">${c}</span></label>`;
+    }).join("");
+    return `<div class="facet"><h3>${title}</h3>${opts}</div>`;
+  };
+  // suggested dynamic keys: most frequent keys in the current results (+ keys that have an active filter)
+  const keyCounts = new Map();
+  for (const f of files) if (matches(f)) for (const k of Object.keys(f.meta)) keyCounts.set(k, (keyCounts.get(k) || 0) + 1);
+  for (const k of Object.keys(F.meta)) if (F.meta[k].size && !keyCounts.has(k)) keyCounts.set(k, 0);
+  const keys = [...keyCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
+  const keyHtml = keys.map(([k, c]) => {
+    const open = openKeys.has(k);
+    let vals = "";
+    if (open) {   // values fetched "on click": computed with every filter except this key's own
+      const vc = [...countBy("meta." + k, (f) => f.meta[k]).entries()].sort((a, b) => b[1] - a[1]);
+      const find = norm(valueFind[k] || "");
+      const sel = F.meta[k] || new Set();
+      vals = `<div class="vals">${vc.filter(([v]) => norm(v).includes(find)).slice(0, 20).map(([v, n]) =>
+        `<label class="opt"><input type="checkbox" data-meta="${k}" value="${v}" ${sel.has(v) ? "checked" : ""}>${v}<span class="c">${n}</span></label>`).join("")}
+        <input class="find" data-find="${k}" placeholder="Search a value…" value="${valueFind[k] || ""}"></div>`;
+    }
+    return `<div class="key ${open ? "open" : ""}" data-key="${k}">${open ? "▾" : "▸"}&nbsp; ${k}<span class="c">${c}</span></div>${vals}`;
+  }).join("");
+  $("#filters").innerHTML = `<h2>Filters</h2>
+    ${facet("Type", "type", TYPE_LABEL, ["radar", "video", "image", "document", "unknown"])}
+    ${facet("Project", "project", {}, ["Alpha", "Bravo"])}
+    <div class="facet"><h3>Date</h3><div class="dates"><input type="date" id="from" value="${F.from}"><input type="date" id="to" value="${F.to}"></div></div>
+    <div class="facet"><h3>Size</h3>
+      <div class="dual"><div class="track"><i id="sizeTrack"></i></div>
+        <input type="range" id="smin" min="0" max="${SIZE_STOPS.length - 1}" step="1" value="${F.smin}" aria-label="Minimum size">
+        <input type="range" id="smax" min="0" max="${SIZE_STOPS.length - 1}" step="1" value="${F.smax}" aria-label="Maximum size"></div>
+      <div class="range"><span id="sminLabel"></span><span id="smaxLabel"></span></div></div>
+    ${facet("Analysis status", "status", STATUS_LABEL, ["done", "pending", "skipped"])}
+    <div class="sep"></div>
+    <div class="facet sugg-h"><h3>Suggested filters</h3><small>free keys common in these results</small>${keyHtml || `<small>none</small>`}</div>`;
+  paintSize();
+  const fi = document.querySelector(`[data-find="${document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.find : ""}"]`);
+  return fi;
+}
+function renderChips() {
+  const chips = [];
+  if (F.batch !== null) chips.push(["batch", `Batch #${F.batch}`]);
+  if (F.type.size) chips.push(["type", "Type: " + [...F.type].map((t) => TYPE_LABEL[t]).join(", ")]);
+  if (F.project.size) chips.push(["project", "Project: " + [...F.project].join(", ")]);
+  if (sizeActive()) chips.push(["size", "Size: " + sizeLabel()]);
+  if (F.status.size) chips.push(["status", "Status: " + [...F.status].map((s) => STATUS_LABEL[s]).join(", ")]);
+  for (const [k, v] of Object.entries(F.meta)) if (v.size) chips.push(["meta." + k, `${k}: ${[...v].join(", ")}`]);
+  $("#chips").innerHTML = chips.map(([k, l]) => `<span class="chip">${l}<button data-chip="${k}" title="Remove">×</button></span>`).join("")
+    + (chips.length ? `<button class="clear" id="clearAll">Clear all</button>` : "");
+}
+function renderGrid() {
+  const r = results();
+  $("#total").textContent = `${r.length} file${r.length > 1 ? "s" : ""}`;
+  if (!r.length) { $("#grid").innerHTML = `<div class="empty">No file matches. Remove a filter or change the search.</div>`; $("#more").textContent = ""; return; }
+  $("#grid").innerHTML = r.slice(0, shown).map((f) => `
+    <div class="res ${f.id === selected ? "sel" : ""}" data-id="${f.id}">
+      <div class="thumb">${thumb(f)}${f.status === "pending" ? `<span class="badge b-info">Analyzing</span>` : ""}</div>
+      <div class="body"><div class="n" title="${f.name}">${f.name}</div>
+        <div class="m">${fmt(f.size)} · ${f.date}</div>
+        <div class="badges"><span class="badge b-muted">${f.type}</span><span class="badge b-muted">${f.project}</span>
+        ${f.status === "skipped" ? `<span class="badge b-muted">Not analyzable</span>` : ""}</div></div>
+    </div>`).join("");
+  $("#more").textContent = shown < r.length ? "Scroll to load more results…" : "End of results";
+}
+function renderDetail() {
+  const f = files.find((x) => x.id === selected);
+  $("#layout").classList.toggle("nodetail", !f);
+  if (!f) { $("#detail").innerHTML = ""; $("#detail").style.display = "none"; return; }
+  $("#detail").style.display = "";
+  const rows = (o) => Object.entries(o).map(([k, v]) => `<div class="row"><span>${k}</span><span>${v}</span></div>`).join("");
+  const batchSize = files.filter((x) => x.batch === f.batch).length;
+  const st = { done: `<span class="badge b-ok">Analyzed</span>`, pending: `<span class="badge b-info">Analyzing</span>`, skipped: `<span class="badge b-muted">Not analyzable</span>` }[f.status];
+  $("#detail").innerHTML = `
+    <div class="h"><h2 title="${f.name}">${f.name}</h2><button class="x" id="closeDetail" title="Close">×</button></div>
+    <div class="preview">${thumb(f, 340, 170)}</div>
+    <button class="btn primary" id="download">Download (${fmt(f.size)})</button>
+    <div class="dl-note">Straight from storage · original name kept</div>
+    <div class="sec"><h3>Identity</h3>${rows({ Size: fmt(f.size), "Detected type": f.type === "unknown" ? "unknown (libmagic: “data”)" : `${f.type}/${f.name.split(".").pop()}` })}
+      <div class="row"><span>Checksum</span><span class="mono">crc32c:${f.crc}</span></div></div>
+    <div class="sec"><h3>User metadata</h3>${rows({ Project: f.project, Description: f.desc, Tags: f.tags.join(", "), ...f.meta })}</div>
+    <div class="sec"><h3>Technical metadata ${st}</h3>${f.status === "done" && f.tech ? rows(f.tech)
+      : f.status === "pending" ? `<div class="row"><span>—</span><span style="color:var(--muted)">The worker is extracting the metadata.</span></div>`
+      : `<div class="row"><span>—</span><span style="color:var(--muted)">Unrecognized format: only universal metadata is available.</span></div>`}</div>
+    <div class="sec"><h3>Provenance</h3>${rows({ "Uploaded by": f.uploader, On: f.date })}
+      <div class="row"><span>Original path</span><span class="mono">${f.path}</span></div>
+      <button class="link" id="seeBatch">View batch (${batchSize} file${batchSize > 1 ? "s" : ""}) →</button></div>`;
+}
+function paintSize() {
+  const n = SIZE_STOPS.length - 1;
+  $("#sizeTrack").style.left = (F.smin / n * 100) + "%";
+  $("#sizeTrack").style.right = ((n - F.smax) / n * 100) + "%";
+  $("#sminLabel").textContent = SIZE_LABELS[F.smin];
+  $("#smaxLabel").textContent = SIZE_LABELS[F.smax];
+}
+function renderAll() { renderChips(); renderFilters(); renderGrid(); renderDetail(); }
+
+// ---------- interactions ----------
+const reset = () => { shown = 12; };
+$("#q").addEventListener("input", () => { reset(); renderChips(); renderFilters(); renderGrid(); });
+$("#sort").onchange = () => { reset(); renderGrid(); };
+$("#filters").addEventListener("change", (e) => {
+  const t = e.target;
+  if (t.dataset.f) { F[t.dataset.f][t.checked ? "add" : "delete"](t.value); }
+  if (t.dataset.meta) { const k = t.dataset.meta; (F.meta[k] = F.meta[k] || new Set())[t.checked ? "add" : "delete"](t.value); }
+  if (t.id === "from") F.from = t.value;
+  if (t.id === "to") F.to = t.value;
+  if (t.id === "smin" || t.id === "smax") { /* values already applied on "input" */ }
+  reset(); renderAll();
+});
+$("#filters").addEventListener("click", (e) => {
+  const k = e.target.closest("[data-key]");
+  if (!k) return;
+  const key = k.dataset.key;
+  openKeys.has(key) ? openKeys.delete(key) : openKeys.add(key);
+  renderFilters();
+});
+$("#filters").addEventListener("input", (e) => {
+  if (e.target.id === "smin" || e.target.id === "smax") {
+    // while dragging: update the slider and the results, but do not redraw the filter panel (it would drop the drag)
+    let a = +$("#smin").value, b = +$("#smax").value;
+    if (a >= b) { if (e.target.id === "smin") a = b - 1; else b = a + 1; $("#smin").value = a; $("#smax").value = b; }
+    F.smin = a; F.smax = b; reset(); paintSize(); renderChips(); renderGrid();
+    return;
+  }
+  const k = e.target.dataset.find;
+  if (k === undefined) return;
+  valueFind[k] = e.target.value;
+  renderFilters();
+  const el = document.querySelector(`[data-find="${k}"]`); el.focus(); el.setSelectionRange(el.value.length, el.value.length);
+});
+$("#chips").addEventListener("click", (e) => {
+  if (e.target.id === "clearAll") {
+    F.type.clear(); F.project.clear(); F.status.clear(); F.meta = {}; F.batch = null; F.smin = 0; F.smax = SIZE_STOPS.length - 1; reset(); renderAll(); return;
+  }
+  const c = e.target.dataset.chip;
+  if (!c) return;
+  if (c === "batch") F.batch = null; else if (c === "size") { F.smin = 0; F.smax = SIZE_STOPS.length - 1; } else if (c.startsWith("meta.")) delete F.meta[c.slice(5)]; else F[c].clear();
+  reset(); renderAll();
+});
+$("#grid").addEventListener("click", (e) => {
+  const card = e.target.closest(".res");
+  if (!card) return;
+  selected = +card.dataset.id; renderGrid(); renderDetail();
+});
+$("#detail").addEventListener("click", (e) => {
+  if (e.target.id === "closeDetail") { selected = null; renderDetail(); renderGrid(); }
+  if (e.target.id === "download") {
+    const f = files.find((x) => x.id === selected);
+    toast(`Prototype: in production, the API answers 302 to a signed URL and the browser downloads ${f.name} straight from storage.`);
+  }
+  if (e.target.id === "seeBatch") {
+    const f = files.find((x) => x.id === selected);
+    F.type.clear(); F.project.clear(); F.status.clear(); F.meta = {}; F.batch = f.batch; F.from = ""; F.to = ""; F.smin = 0; F.smax = SIZE_STOPS.length - 1;
+    $("#q").value = ""; reset(); renderAll();
+    toast(`Same list, filtered on batch #${f.batch}: GET /search?batch_id=${f.batch}`);
+  }
+});
+// infinite scroll: load the next page when the bottom of the list becomes visible (cursor-based in the real API)
+new IntersectionObserver((entries) => {
+  if (entries[0].isIntersecting && shown < results().length) { shown += 12; renderGrid(); }
+}, { rootMargin: "200px" }).observe($("#more"));
+
+renderAll();
+</script>
+</body>
+</html>
