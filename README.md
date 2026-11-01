@@ -105,7 +105,7 @@ An architecture proposal for a system that lets users **upload** highly diverse 
 # UI design of the Upload and Browse pages
 
 - **Mockups:** [docs/ui/upload-page.svg](docs/ui/upload-page.svg) and [docs/ui/browse-page.svg](docs/ui/browse-page.svg), shown below.
-- **Clickable prototypes:** [docs/ui/upload.html](docs/ui/upload.html) and [docs/ui/browse.html](docs/ui/browse.html). Just open them in a browser, nothing to install.
+- **Clickable prototypes, live:** [Upload page](https://zennoumoshe.github.io/fullstack-system-design/docs/ui/upload.html) and [Browse page](https://zennoumoshe.github.io/fullstack-system-design/docs/ui/browse.html) (hosted on GitHub Pages). The sources are [docs/ui/upload.html](docs/ui/upload.html) and [docs/ui/browse.html](docs/ui/browse.html), which can also be opened locally in any browser, nothing to install.
 - **How each element on screen maps to the architecture decision it illustrates** is detailed in [DESIGN_DETAILS.md](DESIGN_DETAILS.md#ui-design-of-the-upload-and-browse-pages).
 
 ## Upload page
